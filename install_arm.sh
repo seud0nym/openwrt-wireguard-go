@@ -1,9 +1,16 @@
-!#/bin/sh
+#!/bin/sh
+
+echo "Checking TUN..."
+if ! zcat /proc/config.gz | grep -q '^CONFIG_TUN=y$'; then
+    zcat /proc/config.gz | grep -q '^CONFIG_TUN'
+    echo "Sorry - TUN must be configured in the kernel"
+    exit 2
+fi
 
 echo "Checking CPU..."
 if ! uname -m | grep -qE '^armv[5678]'; then
     echo "Sorry - Pre-built releases only exist for ARM processors (armv5, armv6, and armv7)"
-    exit 2;;
+    exit 2
 fi
 
 echo "Checking FPU..."
@@ -24,4 +31,9 @@ unset GO_ARM_6_FPUS
 
 echo " -> Selected architecture '$ARCH' based on FPU availability"
 echo "Downloading and installing latest openwrt-wireguard-go_${ARCH}.tgz from Github..."
-curl -kL https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_${ARCH}.tgz | tar -xzvf - -C /
+RESPONSE_CODE=$(curl -kLsI -o /dev/null -w '%{http_code}' https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_${ARCH}.tgz)
+if [ "$RESPONSE_CODE" = "200" ]; then
+    curl -kL https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_${ARCH}.tgz | tar -xzvf - -C /
+else
+    echo "Oh oh! An unexpected error occurred - Download request returned $RESPONSE_CODE"
+fi
