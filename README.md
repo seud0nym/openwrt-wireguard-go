@@ -63,7 +63,7 @@ However, do **NOT** install the opkg packages (`wireguard` and `wireguard-tools`
 Remove any network configurations you have created, then:
 
 ```
-rm /lib/netifd/proto/wireguard.sh /usr/bin/wg /usr/bin/wg-go /usr/bin/wireguard-go
+wg --uninstall
 ```
 ## Thanks
 
