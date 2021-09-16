@@ -1,5 +1,7 @@
 # openwrt-wireguard-go
 
+![Latest Release Downloads](https://img.shields.io/github/downloads/seud0nym/openwrt-wireguard-go/latest/total)
+
 A complete userspace implementation of Wireguard written in Golang for OpenWRT-based devices that do not have kernel support for Wireguard.
 
 For more information on WireGuard, please see https://www.wireguard.com/.
