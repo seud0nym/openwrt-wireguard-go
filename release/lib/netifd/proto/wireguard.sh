@@ -134,11 +134,17 @@ proto_wireguard_setup() {
 	config_get nohostroute "${config}" "nohostroute"
 	config_get tunlink "${config}" "tunlink"
 	config_get log_level "${config}" "log_level"
+	config_get enabled "${config}" "enabled"
 
     export LOG_LEVEL="${log_level}"
 
 	[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "ip link del dev ${config}"
-	ip link del dev "${config}" 2>/dev/null
+	ip link del dev "${config}" >/dev/null 2>&1
+
+	if [ "${enabled}" = "0" ]; then
+		[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "${config} disabled (enabled=${enabled})"
+		return
+	fi
 
 	[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$WG_IMPL ${config}"
 	if [ "${LOG_LEVEL}" = "debug" ]; then
