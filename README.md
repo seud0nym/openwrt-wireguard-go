@@ -2,9 +2,9 @@
 
 ![Latest Release Downloads](https://img.shields.io/github/downloads/seud0nym/openwrt-wireguard-go/latest/total)
 
-A complete userspace implementation of Wireguard written in Golang for OpenWRT-based devices that do not have kernel support for Wireguard.
+A complete userspace implementation of WireGuard written in Golang for OpenWRT-based devices that do not have kernel support for WireGuard.
 
-The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM for each Wireguard interface.
+The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM for each WireGuard interface.
 
 For more information on WireGuard, please see https://www.wireguard.com/.
 
@@ -58,9 +58,9 @@ Please note that only the ARMv5 version has been tested.
 
 ## Usage 
 
-Once installed, you can use the official OpenWRT guides at https://openwrt.org/docs/guide-user/services/vpn/wireguard/start to configure Wireguard as a [server](https://openwrt.org/docs/guide-user/services/vpn/wireguard/server) and/or a [client](https://openwrt.org/docs/guide-user/services/vpn/wireguard/client).
+Once installed, you can use the official OpenWRT guides at https://openwrt.org/docs/guide-user/services/vpn/wireguard/start to configure WireGuard as a [server](https://openwrt.org/docs/guide-user/services/vpn/wireguard/server) and/or a [client](https://openwrt.org/docs/guide-user/services/vpn/wireguard/client).
 
-However, do **NOT** install the opkg packages (`wireguard` and `wireguard-tools`). If your device does not have kernel support for Wireguard, then the installation of the `wireguard` package will probably fail. The `wireguard-tools` package *may* work, but it is unnecessary as this project includes all the required files, and the `wireguard-tools` package will replace some or all of them.
+However, do **NOT** install the opkg packages (`wireguard` and `wireguard-tools`). If your device does not have kernel support for WireGuard, then the installation of the `wireguard` package will probably fail. The `wireguard-tools` package *may* work, but it is unnecessary as this project includes all the required files, and the `wireguard-tools` package will replace some or all of them.
 
 ## Uninstalling
 
@@ -71,6 +71,6 @@ wg --uninstall
 ```
 ## Thanks
 
-This project would not be possible without the official Wireguard cross-platform repositories:
+This project would not be possible without the official WireGuard cross-platform repositories:
 - https://git.zx2c4.com/wireguard-go/about/
 - https://github.com/WireGuard/wgctrl-go
