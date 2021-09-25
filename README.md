@@ -4,7 +4,7 @@
 
 A complete userspace implementation of Wireguard written in Golang for OpenWRT-based devices that do not have kernel support for Wireguard.
 
-The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM.
+The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM for each Wireguard interface.
 
 For more information on WireGuard, please see https://www.wireguard.com/.
 
