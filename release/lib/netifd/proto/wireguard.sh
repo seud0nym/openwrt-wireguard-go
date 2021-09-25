@@ -34,6 +34,7 @@ proto_wireguard_init_config() {
 
 proto_wireguard_setup_peer() {
 	local peer_config="$1"
+	local ipv6="$2"
 
 	local public_key
 	local preshared_key
@@ -65,7 +66,19 @@ proto_wireguard_setup_peer() {
 	fi
 
 	if [ -n "${allowed_ips}" ]; then
-		local allowed="$(echo $allowed_ips | tr ' ' ',')"
+		local allowed=""
+		for allowed_ip in ${allowed_ips}; do
+			case "${allowed_ip}" in
+				*:*)
+					if [ "$ipv6" != "0" ]; then
+						[ -z "$allowed" ] && allowed="${allowed_ip}" || allowed="${allowed},${allowed_ip}"
+					else
+						[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: Ignored Allowed IP ${allowed_ip} (ipv6=$ipv6)"
+					fi;;
+				*.*)
+					[ -z "$allowed" ] && allowed="${allowed_ip}" || allowed="${allowed},${allowed_ip}"
+			esac
+		done
 		[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: AllowedIPs=${allowed}"
 		echo "AllowedIPs=${allowed}" >> "${wg_cfg}"
 	fi
@@ -95,19 +108,27 @@ proto_wireguard_setup_peer() {
 		for allowed_ip in ${allowed_ips}; do
 			case "${allowed_ip}" in
 				*:*/*)
-					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv6_address ${allowed_ip%%/*} ${allowed_ip##*/}"
-					proto_add_ipv6_route "${allowed_ip%%/*}" "${allowed_ip##*/}"
+					if [ "$ipv6" != "0" ]; then
+						[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv6_route ${allowed_ip%%/*}/${allowed_ip##*/}"
+						proto_add_ipv6_route "${allowed_ip%%/*}" "${allowed_ip##*/}"
+					else
+						[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: Skipped routing Allowed IP ${allowed_ip%%/*}/${allowed_ip##*/} (ipv6 = $ipv6)"
+					fi
 					;;
 				*.*/*)
-					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv4_address ${allowed_ip%%/*} ${allowed_ip##*/}"
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv4_route ${allowed_ip%%/*}/${allowed_ip##*/}"
 					proto_add_ipv4_route "${allowed_ip%%/*}" "${allowed_ip##*/}"
 					;;
 				*:*)
-					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv6_address ${allowed_ip%%/*} 128"
-					proto_add_ipv6_route "${allowed_ip%%/*}" "128"
+					if [ "$ipv6" != "0" ]; then
+						[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv6_route ${allowed_ip%%/*}/128"
+						proto_add_ipv6_route "${allowed_ip%%/*}" "128"
+					else
+						[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: Skipped routing Allowed IP ${allowed_ip%%/*}/128 (ipv6 = $ipv6)"
+					fi
 					;;
 				*.*)
-					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv4_address ${allowed_ip%%/*} 32"
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$peer_config: proto_add_ipv4_route ${allowed_ip%%/*}/32"
 					proto_add_ipv4_route "${allowed_ip%%/*}" "32"
 					;;
 			esac
@@ -134,6 +155,7 @@ proto_wireguard_setup() {
 	config_get nohostroute "${config}" "nohostroute"
 	config_get tunlink "${config}" "tunlink"
 	config_get log_level "${config}" "log_level"
+	config_get ipv6 "${config}" "ipv6" 1
 	config_get enabled "${config}" "enabled"
 
     export LOG_LEVEL="${log_level}"
@@ -175,7 +197,7 @@ proto_wireguard_setup() {
 		echo "FwMark=${fwmark}" >> "${wg_cfg}"
 	fi
 
-	config_foreach proto_wireguard_setup_peer "wireguard_${config}"
+	config_foreach proto_wireguard_setup_peer "wireguard_${config}" "${ipv6}"
 
 	# apply configuration file
 	[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "${WG_UTIL} setconf ${config} ${wg_cfg}"
@@ -192,28 +214,38 @@ proto_wireguard_setup() {
 	for address in ${addresses}; do
 		case "${address}" in
 			*:*/*)
-				[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_address ${address%%/*} ${address##*/}"
-				proto_add_ipv6_address "${address%%/*}" "${address##*/}"
+				if [ "$ipv6" != "0" ]; then
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_address ${address%%/*}/${address##*/}"
+					proto_add_ipv6_address "${address%%/*}" "${address##*/}"
+				else
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: Skipped ${address%%/*}/${address##*/} (ipv6 = $ipv6)"
+				fi
 				;;
 			*.*/*)
 				[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv4_address ${address%%/*} ${address##*/}"
 				proto_add_ipv4_address "${address%%/*}" "${address##*/}"
 				;;
 			*:*)
-				[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_address ${address%%/*} 128"
-				proto_add_ipv6_address "${address%%/*}" "128"
+				if [ "$ipv6" != "0" ]; then
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_address ${address%%/*}/128"
+					proto_add_ipv6_address "${address%%/*}" "128"
+				else
+					[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: Skipped ${address%%/*}/128 (ipv6 = $ipv6)"
+				fi
 				;;
 			*.*)
-				[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv4_address ${address%%/*} 32"
+				[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv4_address ${address%%/*}/32"
 				proto_add_ipv4_address "${address%%/*}" "32"
 				;;
 		esac
 	done
 
-	for prefix in ${ip6prefix}; do
-		[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_prefix $prefix"
-		proto_add_ipv6_prefix "$prefix"
-	done
+	if [ "$ipv6" != "0" ]; then
+		for prefix in ${ip6prefix}; do
+			[ "${LOG_LEVEL}" = "debug" ] && $LOGGER daemon.debug "$config: proto_add_ipv6_prefix $prefix"
+			proto_add_ipv6_prefix "$prefix"
+		done
+	fi
 
 	# endpoint dependency
 	if [ "${nohostroute}" != "1" ]; then
