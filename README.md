@@ -2,7 +2,7 @@
 
 ![Latest Release Downloads](https://img.shields.io/github/downloads/seud0nym/openwrt-wireguard-go/latest/total)
 
-A complete userspace implementation of WireGuard written in Golang for OpenWRT-based devices that do not have kernel support for WireGuard.
+A complete userspace implementation of WireGuard written in Golang for OpenWRT-based devices that do not have kernel support for WireGuard. If your device *does* have kernel support for WireGuard, then you should not be using this.
 
 The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM for each WireGuard interface.
 
@@ -60,7 +60,9 @@ Please note that only the ARMv5 version has been tested.
 
 Once installed, you can use the official OpenWRT guides at https://openwrt.org/docs/guide-user/services/vpn/wireguard/start to configure WireGuard as a [server](https://openwrt.org/docs/guide-user/services/vpn/wireguard/server) and/or a [client](https://openwrt.org/docs/guide-user/services/vpn/wireguard/client).
 
-However, do **NOT** install the opkg packages (`wireguard` and `wireguard-tools`). If your device does not have kernel support for WireGuard, then the installation of the `wireguard` package will probably fail. The `wireguard-tools` package *may* work, but it is unnecessary as this project includes all the required files, and the `wireguard-tools` package will replace some or all of them.
+*However*, do **NOT** install the specified opkg packages (`wireguard` and `wireguard-tools`). If your device does not have kernel support for WireGuard, then the installation of the `wireguard` package will probably fail. The `wireguard-tools` package *may* work, but it is unnecessary as this project includes all the required files, and the `wireguard-tools` package will replace some or all of them, causing everything to break.
+
+If your device *does* have kernel support for WireGuard, then you should not be using this. If you just need an implementation of the WireGuard [wg(8)](https://git.zx2c4.com/wireguard-tools/about/src/man/wg.8) utility, then have a look at [wg-go](https://github.com/seud0nym/wg-go).
 
 ## Uninstalling
 
