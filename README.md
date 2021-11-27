@@ -20,28 +20,6 @@ If this command returns `CONFIG_TUN=y`, then you *can* use this implementation. 
 
 ## Installation
 
-### Package Installation
-
-An `opkg` repository is available for **arm-cortex-a9** architecture devices. 
-
-#### opkg Configuration
-
-Run the following commands to configure `opkg` correctly:
-
-```
-grep -qE 'arch\s*\barm_cortex-a9\b' /etc/opkg.conf || echo 'arch arm_cortex-a9 10' >> /etc/opkg.conf
-grep -q '/openwrt-wireguard-go/' /etc/opkg/customfeeds.conf || echo 'src/gz wg_go https://github.com/seud0nym/openwrt-wireguard-go/repository/arm_cortex-a9/base' >> /etc/opkg/customfeeds.conf
-```
-
-To install or upgrade, run the following commands:
-
-```
-opkg update
-opkg install wireguard-go
-```
-
-### Manual Installation
-
 #### Devices with ARMv5/6/7 Processors
 
 Run the following command to download and install the correct release for your device:
@@ -91,14 +69,6 @@ If your device *does* have kernel support for WireGuard, then you should not be 
 ## Uninstalling
 
 Remove any network configurations you have created, then:
-
-### Package Installation
-
-```
-opkg remove wireguard-go
-```
-
-### Manually Installion
 
 ```
 wg --uninstall

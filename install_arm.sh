@@ -7,19 +7,19 @@ if ! zcat /proc/config.gz | grep -q '^CONFIG_TUN=y$'; then
     exit 2
 fi
 
-echo "Checking opkg configuration..."
-grep -qE 'arch\s*\barm_cortex-a9\b' /etc/opkg.conf
-if [ $? -eq 0 ]; then
-    echo " -> Found architecture arm_cortex-a9 in /etc/opkg.conf"
-    echo "Downloading and installing latest openwrt-wireguard-go_arm_cortex-a9.ipk from Github..."
-    RESPONSE_CODE=$(curl -kLsI -o /dev/null -w '%{http_code}' https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_arm_cortex-a9.ipk)
-    if [ "$RESPONSE_CODE" = "200" ]; then
-        curl -kL https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_arm_cortex-a9.ipk -o/tmp/openwrt-wireguard-go_arm_cortex-a9.ipk
-        opkg install /tmp/openwrt-wireguard-go_arm_cortex-a9.ipk
-    else
-        echo "Oh oh! An unexpected error occurred - Download request returned $RESPONSE_CODE"
-    fi
-else
+# echo "Checking opkg configuration..."
+# grep -qE 'arch\s*\barm_cortex-a9\b' /etc/opkg.conf
+# if [ $? -eq 0 ]; then
+#     echo " -> Found architecture arm_cortex-a9 in /etc/opkg.conf"
+#     echo "Downloading and installing latest openwrt-wireguard-go_arm_cortex-a9.ipk from Github..."
+#     RESPONSE_CODE=$(curl -kLsI -o /dev/null -w '%{http_code}' https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_arm_cortex-a9.ipk)
+#     if [ "$RESPONSE_CODE" = "200" ]; then
+#         curl -kL https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_arm_cortex-a9.ipk -o/tmp/openwrt-wireguard-go_arm_cortex-a9.ipk
+#         opkg install /tmp/openwrt-wireguard-go_arm_cortex-a9.ipk
+#     else
+#         echo "Oh oh! An unexpected error occurred - Download request returned $RESPONSE_CODE"
+#     fi
+# else
     echo "Checking CPU..."
     if ! uname -m | grep -qE '^armv[5678]'; then
         echo "Sorry - Pre-built releases only exist for ARM processors (armv5, armv6, and armv7)"
@@ -50,4 +50,4 @@ else
     else
         echo "Oh oh! An unexpected error occurred - Download request returned $RESPONSE_CODE"
     fi
-fi
+# fi
