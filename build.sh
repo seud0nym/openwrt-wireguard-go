@@ -102,6 +102,52 @@ wg() {
     return 0
 }
 
+build_package() {
+    local version=$(date +%Y.%m.%d)
+    local ipk="wireguard-go_${version}_arm_cortex-a9.ipk"
+    local size sha256 obsolete installed_size=$(du -bs "$BASE_DIR/release" | cut -f1)
+
+    echo "${GREEN} -> Building $BASE_DIR/repository/arm_cortex-a9/base/${ipk}...${GREY}"
+    cat <<CTL > "$BASE_DIR/release/control"
+Package: wireguard-go
+Version: $version
+Depends: libc
+Source: N/A
+SourceName: openwrt-wireguard-go
+License: MIT
+LicenseFiles: LICENSE
+Priority: optional
+Section: net
+Maintainer: seud0nym <seud0nym@yahoo.com.au>
+Architecture: arm_cortex-a9
+Installed-Size: $installed_size
+Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptography. It 
+  aims to be faster, simpler, leaner, and more useful than IPSec, while 
+  avoiding the massive headache. It intends to be considerably more 
+  performant than OpenVPN.  WireGuard is designed as a general purpose VPN 
+  for running on embedded interfaces and super computers alike, fit for 
+  many different circumstances. It uses UDP.
+
+  This package provides the official userspace implementation of WireGuard 
+  plus \`wg-go\`, a userspace implementation of the control program \`wg(8)\`, 
+  and the netifd protocol helper.
+CTL
+    chmod 644 "$BASE_DIR/release/control"
+    $BASE_DIR/release/make_ipk.sh "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/release"
+    if [ $? -eq 0 ]; then
+        cp -f "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/$(basename $BASE_DIR)_arm_cortex-a9.ipk"
+        size=$(du -bs "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | cut -f1)
+        sha256=$(sha256sum "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | cut -d" " -f1)
+        sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
+        gzip -fk "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
+        obsolete=$(ls $BASE_DIR/repository/arm_cortex-a9/base/*.ipk 2>/dev/null | grep -v $version)
+        [ -n "$obsolete" ] && rm $obsolete
+    else
+        echo "${RED}: Failed to create package $BASE_DIR/repository/arm_cortex-a9/base/${ipk}!"
+    fi
+    echo -n "${NC}"
+}
+
 build_release() {
     local tgz="$(basename $BASE_DIR)_$1.tgz" 
 
@@ -126,6 +172,10 @@ build_release() {
     echo "${GREEN} -> Building $BASE_DIR/$tgz...${GREY}"
     tar -zvcf $BASE_DIR/$tgz --mode=755 --exclude="*.git*" -C "$BASE_DIR/release" $(find "$BASE_DIR/release" -maxdepth 1 -type d ! -name . -printf "%P ")
     echo -n "${NC}"
+
+    if [ "$1" = "armv5" ]; then
+        build_package
+    fi
 }
 
 if wg && wireguard; then

@@ -1,5 +1,10 @@
 *.tgz
+openwrt-wireguard-go_arm_cortex-a9.ipk
 wg
 wg-go
 wireguard-go
 build.env
+packagetemp.tar
+data.tar*
+control.tar*
+control

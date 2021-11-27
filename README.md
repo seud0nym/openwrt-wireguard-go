@@ -20,7 +20,29 @@ If this command returns `CONFIG_TUN=y`, then you *can* use this implementation. 
 
 ## Installation
 
-### Devices with ARMv5/6/7 Processors
+### Package Installation
+
+An `opkg` repository is available for **arm-cortex-a9** architecture devices. 
+
+#### opkg Configuration
+
+Run the following commands to configure `opkg` correctly:
+
+```
+grep -qE 'arch\s*\barm_cortex-a9\b' /etc/opkg.conf || echo 'arch arm_cortex-a9 10' >> /etc/opkg.conf
+grep -q '/openwrt-wireguard-go/' /etc/opkg/customfeeds.conf || echo 'src/gz wg_go https://github.com/seud0nym/openwrt-wireguard-go/repository/arm_cortex-a9/base' >> /etc/opkg/customfeeds.conf
+```
+
+To install or upgrade, run the following commands:
+
+```
+opkg update
+opkg install wireguard-go
+```
+
+### Manual Installation
+
+#### Devices with ARMv5/6/7 Processors
 
 Run the following command to download and install the correct release for your device:
 ```
@@ -29,7 +51,9 @@ curl -skL https://raw.githubusercontent.com/seud0nym/openwrt-wireguard-go/master
 
 The script will determine the correct version for your processor. This may mean, for example, that even though your device has an ARMv7 processor, the ARMv5 release may be selected, as some versions of the ARMv7 chip do not have a Floating Point Unit which will cause the ARMv7 release to core dump.
 
-### Manual download and execution of install script
+If `opkg` is configured correctly with an architecture of **arm-cortex-a9** specified in the `/etc/opkg.conf` file, then the latest release .ipk file will be downloaded and installed with the `opkg` command. Otherwise, the appropriate release tar file will be downloaded and extracted to the correct locations.
+
+#### Manual download and execution of install script
 
 If you are uncomfortable running the script without reviewing it first, simply download it and execute it manually:
 ```
@@ -68,9 +92,18 @@ If your device *does* have kernel support for WireGuard, then you should not be 
 
 Remove any network configurations you have created, then:
 
+### Package Installation
+
+```
+opkg remove wireguard-go
+```
+
+### Manually Installion
+
 ```
 wg --uninstall
 ```
+
 ## Thanks
 
 This project would not be possible without the official WireGuard cross-platform repositories:
