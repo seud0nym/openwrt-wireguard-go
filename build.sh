@@ -113,7 +113,6 @@ Package: wireguard-go
 Version: $version
 Depends: libc
 Source: N/A
-SourceName: openwrt-wireguard-go
 License: MIT
 LicenseFiles: LICENSE
 Priority: optional
@@ -132,7 +131,6 @@ Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptograph
   plus \`wg-go\`, a userspace implementation of the control program \`wg(8)\`, 
   and the netifd protocol helper.
 CTL
-    chmod 644 "$BASE_DIR/release/control"
     $BASE_DIR/release/make_ipk.sh "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/release"
     if [ $? -eq 0 ]; then
         cp -f "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/$(basename $BASE_DIR)_arm_cortex-a9.ipk"
