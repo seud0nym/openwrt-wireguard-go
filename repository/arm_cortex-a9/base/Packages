@@ -11,8 +11,8 @@ Maintainer: seud0nym <seud0nym@yahoo.com.au>
 Architecture: arm_cortex-a9
 Installed-Size: 5385152
 Filename: wireguard-go_2021.11.27_arm_cortex-a9.ipk
-Size: 2207609
-SHA256sum: 44c999be62a337f89668d6aeb911ba5cfb41c4f6dd39c6f5080dc7fc9962a26f
+Size: 2207718
+SHA256sum: 9fcf970a660bc06cb5a80507d7b41a5e0a4c26556c4bafe26dfa974c93c47906
 Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptography. It 
   aims to be faster, simpler, leaner, and more useful than IPSec, while 
   avoiding the massive headache. It intends to be considerably more 
