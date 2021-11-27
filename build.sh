@@ -105,7 +105,7 @@ wg() {
 build_package() {
     local version=$(date +%Y.%m.%d)
     local ipk="wireguard-go_${version}_arm_cortex-a9.ipk"
-    local size sha256 obsolete installed_size=$(du -bs "$BASE_DIR/release" | cut -f1)
+    local size sha256 obsolete installed_size=$(cat $(find "$BASE_DIR/release/usr" "$BASE_DIR/release/lib" -type f ! -name .gitkeep) | wc -c)
 
     echo "${GREEN} -> Building $BASE_DIR/repository/arm_cortex-a9/base/${ipk}...${GREY}"
     cat <<CTL > "$BASE_DIR/release/control"
@@ -136,7 +136,7 @@ CTL
     $BASE_DIR/release/make_ipk.sh "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/release"
     if [ $? -eq 0 ]; then
         cp -f "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/$(basename $BASE_DIR)_arm_cortex-a9.ipk"
-        size=$(du -bs "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | cut -f1)
+        size=$(cat "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | wc -c)
         sha256=$(sha256sum "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | cut -d" " -f1)
         sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
         gzip -fk "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
