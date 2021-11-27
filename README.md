@@ -30,7 +30,7 @@ Run the following commands to configure `opkg` correctly:
 
 ```
 grep -qE 'arch\s*\barm_cortex-a9\b' /etc/opkg.conf || echo 'arch arm_cortex-a9 10' >> /etc/opkg.conf
-grep -q '/openwrt-wireguard-go/' /etc/opkg/customfeeds.conf || echo 'src/gz wg_go https://github.com/seud0nym/openwrt-wireguard-go/repository/arm_cortex-a9/base' >> /etc/opkg/customfeeds.conf
+grep -q '/openwrt-wireguard-go/' /etc/opkg/customfeeds.conf || echo 'src/gz wg_go https://raw.githubusercontent.com/seud0nym/openwrt-wireguard-go/master/repository/arm_cortex-a9/base' >> /etc/opkg/customfeeds.conf
 ```
 
 To install or upgrade, run the following commands:
