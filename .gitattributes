@@ -7,5 +7,6 @@ debian_binary text eol=lf
 LICENSE       text eol=lf
 Packages      text eol=lf
 
-*.gz binary
+*.gz  binary
 *.ipk binary
+*.tgz binary
