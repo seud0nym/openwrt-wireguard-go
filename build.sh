@@ -50,13 +50,13 @@ checkSHA256() {
 
 wireguard() {
     echo "${GREEN}:Processing wireguard-go${GREY}"
-    local UNMODIFIED_main="1889250813d3fc9e4538e669b4fe86fd2caa4949094be06033e6a5c0eb6deb29"
+    local UNMODIFIED_main="1c587571d9838fbbe34bf8d86bb59eb7ff0aa539aa7a12ca4979c0548252fee8"
     local UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
-    local UNMODIFIED_queueconstants_default="461802f0fac24977a6164ac96b47b59740c506ed124c39a9e434493889384f28"
+    local UNMODIFIED_queueconstants_default="470364f455a6637f061cf6363929e8977f7872b43fd6f5ea008e223671b5330c"
     
-    local MODIFIED_main="2cf3bcb37be0f4e4e58ccc416ba16a6bec61261f12271afa7c9aedceacf51589"
-    local MODIFIED_makefile="c04d9998ae41f016319fb49cc7ffe4955c016368b880814980335fce48b961a2"
-    local MODIFIED_queueconstants_default="228c3ed2e4851c988d6a0e4837d18d26f32880331beaa723f13d9aa27dd2be51"
+    local MODIFIED_main="b33f7066a96e002ad62097cbe1c471d38c3d71aee8920c2c91633ffd432b8801"
+    local MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
+    local MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
 
     cd ${REPO_ROOT_DIR}
     if [ ! -d wireguard-go ]; then
@@ -142,7 +142,7 @@ if wg && wireguard; then
     for a in $@; do
         export GOARCH="$a"
         if [ "$a" = "arm" ]; then
-            for v in 5 6 7; do
+            for v in 7 6 5; do
                 export GOARM="$v"
                 build_release "${a}v${v}"
                 unset GOARM
