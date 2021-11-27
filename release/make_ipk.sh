@@ -75,7 +75,6 @@ fi
 # exclude control, conffiles, and this script if it's there..
 #
 echo " Creating data.tar.gz ..."
-OUR_BASENAME=`basename $0`
 gzip < "data.tar" > "data.tar.gz"
 if [ $? != 0 ] || [ ! -f "data.tar.gz" ]; then 
 	echo " ERROR: creation of $2/data.tar.gz failed!"
