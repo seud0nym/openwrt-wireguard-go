@@ -1,3 +1,11 @@
-* text eol=lf
+*.md  text eol=lf
+*.sh  text eol=lf
+.git* text eol=lf
 
+conffiles     text eol=lf
+debian_binary text eol=lf
+LICENSE       text eol=lf
+Packages      text eol=lf
+
+*.gz binary
 *.ipk binary
