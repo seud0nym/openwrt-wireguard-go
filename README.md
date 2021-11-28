@@ -1,7 +1,5 @@
 # openwrt-wireguard-go
 
-![Latest Release Downloads](https://img.shields.io/github/downloads/seud0nym/openwrt-wireguard-go/latest/total)
-
 A complete userspace implementation of WireGuard written in Golang for OpenWRT-based devices that do not have kernel support for WireGuard. If your device *does* have kernel support for WireGuard, then you should not be using this.
 
 The implementation is optimised for minimum memory use. It should only consume around 20Mb of RAM for each WireGuard interface.
