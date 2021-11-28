@@ -96,7 +96,7 @@ Remove any network configurations you have created, then:
 opkg remove wireguard-go
 ```
 
-### Manually Installion
+### Manually Installation
 
 ```
 wg --uninstall
