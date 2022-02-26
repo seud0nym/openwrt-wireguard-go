@@ -28,7 +28,7 @@ rm "packagetemp.tar"
 # create control.tar
 #
 echo " Creating control.tar ..."
-tar --mode=644 -cf "control.tar" "./control" "./conffiles"
+tar -cf "control.tar" "./control" "./conffiles" "./postinst"
 if [ $? != 0 ] || [ ! -f "control.tar" ]; then 
 	echo " ERROR: creation of $2/control.tar failed!"
 	exit 2	
@@ -62,7 +62,7 @@ for i in $ALL_FILES; do
 	fi
 done
 echo " dbg.infiles: $INPUT_FILES"
-tar "--exclude=./control.tar" "--exclude=./control" "--exclude=./conffile*" "--exclude=./$OUR_BASENAME" "--exclude=./$IPK_BASENAME" "--exclude=.gitkeep" -cvf data.tar $INPUT_FILES
+tar "--exclude=./control.tar" "--exclude=./control" "--exclude=./conffile*" "--exclude=./postinst" "--exclude=./$OUR_BASENAME" "--exclude=./$IPK_BASENAME" "--exclude=.gitkeep" -cvf data.tar $INPUT_FILES
 echo " -------- current data.tar ----------"
 tar -tvf data.tar
 if [ $? != 0 ] || [ ! -f "data.tar" ]; then 
