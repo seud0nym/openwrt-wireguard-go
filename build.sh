@@ -27,7 +27,7 @@ shift $((OPTIND-1))
 [ -z "$ARM" ] && ARM="7 6 5"
 
 if [ $# -eq 0 ]; then
-    set -- "arm"
+    set -- "arm mips"
 elif [ "$1" = "all" ]; then
     set -- $GOARCH_ALL
 else
@@ -180,6 +180,7 @@ CTL
         echo "${RED}: Failed to create package $BASE_DIR/repository/arm_cortex-a9/base/${ipk}!"
     fi
     echo -n "${NC}"
+    rm $BASE_DIR/release/control $BASE_DIR/release/*.tar $BASE_DIR/release/*.tar.gz
 }
 
 build_release() {
@@ -211,6 +212,8 @@ build_release() {
         build_package
     fi
 }
+
+find . -maxdepth 1 -mindepth 1 -name 'openwrt-wireguard-go_*' -exec rm {} \;
 
 if wg && wireguard; then
     echo "${GREY}"
