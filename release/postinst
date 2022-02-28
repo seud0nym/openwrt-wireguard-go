@@ -6,3 +6,5 @@ default_postinst $0 $@
 echo "net.ipv6.conf.$(uci get network.wan.ifname).accept_ra = 2" >> /etc/sysctl.d/99-wireguard.conf
 chmod 644 /etc/sysctl.d/99-wireguard.conf
 sysctl -q -e -p /etc/sysctl.d/99-wireguard.conf
+
+exit 0
