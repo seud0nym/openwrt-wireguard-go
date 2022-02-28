@@ -1,0 +1,15 @@
+#!/bin/sh
+
+[ "$ACTION" = "remove" ] || exit
+
+. /lib/functions.sh
+config_load network
+config_get proto   $INTERFACE proto   unknown
+config_get enabled $INTERFACE enabled 0
+
+if [ "$proto" = "wireguard" -a "$enabled" = "1" -a "$(ifstatus $INTERFACE | jsonfilter -e '@.pending')" = "false" ]; then
+  logger -t "hotplug-wireguard" -p daemon.warn "Interface '$INTERFACE' removed but still enabled! Bringing back up now..."
+  ifup $INTERFACE
+fi
+
+exit 0
