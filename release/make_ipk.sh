@@ -23,7 +23,7 @@ cd "$2"
 ##############################################
 # do some cleanup from any previous runs
 #
-rm "packagetemp.tar"
+[ -e packagetemp.tar ] && rm packagetemp.tar
 ##############################################
 # create control.tar
 #
@@ -53,7 +53,7 @@ OUR_BASENAME=`basename $0`
 IPK_BASENAME=`basename $1`
 # just get top-level directories actually
 ALL_FILES=`find "./" -maxdepth 1 | sed 1d` 
-rm data.tar
+[ -e data.tar ] && rm -f data.tar
 INPUT_FILES=" "
 for i in $ALL_FILES; do
 	echo "  Processing $i "
