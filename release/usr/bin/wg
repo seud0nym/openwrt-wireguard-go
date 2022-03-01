@@ -1,0 +1,70 @@
+#!/bin/sh
+
+GREEN='\033[1;32m'
+GREY='\033[90m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Wrapper for wg-go executable
+WG=$(which wg-go)
+if [ -z "$WG" ]; then
+    echo -e "${RED}ERROR: Could not locate the wg-go executable!${NC}"
+    exit 2
+fi
+
+if [ "do$1" == "do--uninstall" ]; then
+    echo -e "${GREEN}This will remove any existing wireguard network interfaces and then uninstall wireguard.${NC}"
+    echo -e -n "${GREEN}Are you sure you want to remove wireguard? [y|n] ${NC}"
+    read
+    if [ "$REPLY" != "y" -a "$REPLY" != "Y" ]; then
+        exit
+    fi
+
+    CHANGED=0
+    LAN_ZONE=$(uci show firewall | grep @zone | grep -m 1 "network='lan'" | cut -d. -f1-2)
+    WAN_ZONE=$(uci show firewall | grep @zone | grep -m 1 "wan='1'" | cut -d. -f1-2)
+
+    for WG_IFACE in $(uci show network | grep "proto='wireguard'" | cut -d. -f2); do
+        echo -e "${GREEN}Processing interface '$WG_IFACE'...${GREY}"
+        for WG_PEER in $(uci show network | grep "=wireguard_${WG_IFACE}\$" | cut -d= -f1); do
+            echo -e "${GREEN} -> Removing WG_PEER $(uci -q get ${WG_PEER}.public_key)${GREY}"
+            uci -q delete $WG_PEER
+        done
+        echo -e "${GREEN} -> Removing interface ${WG_IFACE}${GREY}"
+        uci -q del_list $WAN_ZONE.network="${WG_IFACE}"
+        uci -q del_list $LAN_ZONE.network="${WG_IFACE}"
+        uci -q delete network.$WG_IFACE
+        CHANGED=1
+    done
+
+    if [ $CHANGED -eq 1 ]; then
+        echo -e "${GREEN}Committing firewall changes...${GREY}"
+        uci commit firewall
+        /etc/init.d/firewall reload
+        echo -e "${GREEN}Committing network changes...${GREY}"
+        uci commit network
+        /etc/init.d/network restart
+    else
+        echo -e "${NC}No existing wireguard network interfaces found"
+    fi
+
+    echo -e "${GREEN}Removing files...${GREY}"
+    for FILE in /lib/netifd/proto/wireguard.sh /usr/bin/wg-go /usr/bin/wireguard-go /usr/bin/wg /etc/sysctl.d/99-wireguard.conf; do
+        if [ -e "$FILE" ]; then
+            echo -e "${GREEN} -> Removing $FILE${GREY}"
+            rm "$FILE"
+        fi
+    done
+    
+    echo -e "${GREEN}Done${NC}"
+    exit
+fi
+
+export WG_COMMAND="$(basename $0)"
+
+$WG "$@"
+RC=$?
+
+unset WG_COMMAND
+
+exit $RC
