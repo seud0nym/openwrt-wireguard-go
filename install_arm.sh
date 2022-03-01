@@ -47,6 +47,7 @@ else
     RESPONSE_CODE=$(curl -kLsI -o /dev/null -w '%{http_code}' https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_${ARCH}.tgz)
     if [ "$RESPONSE_CODE" = "200" ]; then
         curl -kL https://github.com/seud0nym/openwrt-wireguard-go/releases/latest/download/openwrt-wireguard-go_${ARCH}.tgz | tar -xzvf - -C /
+        sysctl -e -p /etc/sysctl.d/99-wireguard.conf
     else
         echo "Oh oh! An unexpected error occurred - Download request returned $RESPONSE_CODE"
     fi

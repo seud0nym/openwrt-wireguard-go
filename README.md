@@ -74,8 +74,6 @@ The `build.sh` script will by default build the release .tgz files for the ARM a
 To install the release on a device, execute:
 ```
 tar -zxvf openwrt-wireguard-go_<ARCH>.tgz -C /
-echo "net.ipv6.conf.$(uci get network.wan.ifname).accept_ra = 2" >> /etc/sysctl.d/99-wireguard.conf
-chmod 644 /etc/sysctl.d/99-wireguard.conf
 sysctl -e -p /etc/sysctl.d/99-wireguard.conf
 ```
 
@@ -103,7 +101,6 @@ opkg remove wireguard-go
 
 ```
 wg --uninstall
-rm /etc/sysctl.d/99-wireguard.conf
 ```
 
 ## Thanks
