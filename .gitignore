@@ -1,5 +1,6 @@
 *.tgz
 openwrt-wireguard-go_arm_cortex-a9.ipk
+wg
 wg-go
 wireguard-go
 build.env
