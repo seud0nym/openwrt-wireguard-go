@@ -75,17 +75,33 @@ wireguard() {
     local MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
     local MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
 
+    VERSION=$(date +%Y.%m.%d)
+
     cd ${REPO_ROOT_DIR}
     if [ ! -d wireguard-go ]; then
         git clone https://git.zx2c4.com/wireguard-go
     fi
 
     cd ${REPO_ROOT_DIR}/wireguard-go
-    echo "${GREEN} -> Pulling latest wireguard-go repository...${GREY}"
+    if [ $COMMIT = HEAD ]; then
+        echo "${GREEN} -> Pulling latest wireguard-go repository...${GREY}"
+    else
+        echo "${GREEN} -> Pulling wireguard-go repository as at commit ${COMMIT}...${GREY}"
+    fi
     gitreset
 
     case $(git rev-parse --short HEAD) in
+        d49a3de) # 2022-08-20
+            VERSION="2022.08.20"
+            UNMODIFIED_main="8c58063f67f63d91d64dec6072cf728a3449a1b263c99074c850db0a630f6058"
+            UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
+            UNMODIFIED_queueconstants_default="470364f455a6637f061cf6363929e8977f7872b43fd6f5ea008e223671b5330c"
+            MODIFIED_main="18c2174e0a22c3e9ac6fd5d077ed8e7e97ec401f3207bf45e5b590964fc4ace4"
+            MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
+            MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
+            ;;
         3b95c81) # 2022-02-13
+            VERSION="2022.03.01"
             UNMODIFIED_main="8c58063f67f63d91d64dec6072cf728a3449a1b263c99074c850db0a630f6058"
             UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
             UNMODIFIED_queueconstants_default="470364f455a6637f061cf6363929e8977f7872b43fd6f5ea008e223671b5330c"
@@ -94,6 +110,7 @@ wireguard() {
             MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
             ;;
         bb745b2) # 2021-09-27
+            VERSION="2021.11.27"
             UNMODIFIED_main="1889250813d3fc9e4538e669b4fe86fd2caa4949094be06033e6a5c0eb6deb29"
             UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
             UNMODIFIED_queueconstants_default="461802f0fac24977a6164ac96b47b59740c506ed124c39a9e434493889384f28"
@@ -139,11 +156,13 @@ wg() {
 }
 
 build_package() {
-    local version=$(date +%Y.%m.%d)
-    local ipk="wireguard-go_${version}_arm_cortex-a9.ipk"
+    local arch="$1"
+    local version="$2"
+    local ipk="wireguard-go_${version}_$arch.ipk"
     local size sha256 obsolete installed_size=$(cat $(find "$BASE_DIR/release/usr" "$BASE_DIR/release/lib" -type f ! -name .gitkeep) | wc -c)
 
-    echo "${GREEN} -> Building $BASE_DIR/repository/arm_cortex-a9/base/${ipk}...${GREY}"
+    echo "${GREEN} -> Building $BASE_DIR/repository/$arch/base/${ipk}...${GREY}"
+    mkdir -p $BASE_DIR/repository/$arch/base
     cat <<CTL > "$BASE_DIR/release/control"
 Package: wireguard-go
 Version: $version
@@ -154,7 +173,7 @@ LicenseFiles: LICENSE
 Priority: optional
 Section: net
 Maintainer: seud0nym <seud0nym@yahoo.com.au>
-Architecture: arm_cortex-a9
+Architecture: $arch
 Installed-Size: $installed_size
 Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptography. It 
   aims to be faster, simpler, leaner, and more useful than IPSec, while 
@@ -167,17 +186,17 @@ Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptograph
   plus \`wg-go\`, a userspace implementation of the control program \`wg(8)\`, 
   and the netifd protocol helper.
 CTL
-    $BASE_DIR/release/make_ipk.sh "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/release"
+    $BASE_DIR/release/make_ipk.sh "$BASE_DIR/repository/$arch/base/${ipk}" "$BASE_DIR/release"
     if [ $? -eq 0 ]; then
-        cp -f "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" "$BASE_DIR/$(basename $BASE_DIR)_arm_cortex-a9.ipk"
-        size=$(cat "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | wc -c)
-        sha256=$(sha256sum "$BASE_DIR/repository/arm_cortex-a9/base/${ipk}" | cut -d" " -f1)
-        sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
-        gzip -fk "$BASE_DIR/repository/arm_cortex-a9/base/Packages"
-        obsolete=$(ls $BASE_DIR/repository/arm_cortex-a9/base/*.ipk 2>/dev/null | grep -v $version)
+        cp -f "$BASE_DIR/repository/$arch/base/${ipk}" "$BASE_DIR/$(basename $BASE_DIR)_${arch}.ipk"
+        size=$(cat "$BASE_DIR/repository/$arch/base/${ipk}" | wc -c)
+        sha256=$(sha256sum "$BASE_DIR/repository/$arch/base/${ipk}" | cut -d" " -f1)
+        sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/$arch/base/Packages"
+        gzip -fk "$BASE_DIR/repository/$arch/base/Packages"
+        obsolete=$(ls $BASE_DIR/repository/$arch/base/*.ipk 2>/dev/null | grep -v $version)
         [ -n "$obsolete" ] && rm $obsolete
     else
-        echo "${RED}: Failed to create package $BASE_DIR/repository/arm_cortex-a9/base/${ipk}!"
+        echo "${RED}: Failed to create package $BASE_DIR/repository/$arch/base/${ipk}!"
     fi
     echo -n "${NC}"
     rm $BASE_DIR/release/control $BASE_DIR/release/*.tar $BASE_DIR/release/*.tar.gz
@@ -208,9 +227,10 @@ build_release() {
     tar -zvcf $BASE_DIR/$tgz --mode=755 --exclude="*.git*" -C "$BASE_DIR/release" $(find "$BASE_DIR/release" -maxdepth 1 -type d ! -name . -printf "%P ")
     echo -n "${NC}"
 
-    if [ "$1" = "armv5" ]; then
-        build_package
-    fi
+    case "$1" in 
+        armv5) build_package arm_cortex-a9 $VERSION;;
+        arm64) build_package arm_cortex-a53 $VERSION;;
+    esac
 }
 
 find . -maxdepth 1 -mindepth 1 -name 'openwrt-wireguard-go_*' -exec rm {} \;

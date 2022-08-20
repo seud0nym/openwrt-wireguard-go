@@ -1,5 +1,5 @@
 Package: wireguard-go
-Version: 2022.03.01
+Version: 2022.08.20
 Depends: libc
 Source: N/A
 License: MIT
@@ -8,10 +8,10 @@ Priority: optional
 Section: net
 Maintainer: seud0nym <seud0nym@yahoo.com.au>
 Architecture: arm_cortex-a9
-Installed-Size: 5385184
-Filename: wireguard-go_2022.03.01_arm_cortex-a9.ipk
-Size: 2208215
-SHA256sum: 26f6bef93725bb60156319c508e46f4f6d943afcfba23cea1a59d1ceef3a7037
+Installed-Size: 5843936
+Filename: wireguard-go_2022.08.20_arm_cortex-a9.ipk
+Size: 2385858
+SHA256sum: ed31ccf6486aba21384b452f8642d9ce21d91ee0fc6af22ced7edd67e92a803d
 Description: WireGuard is a novel VPN that utilizes state-of-the-art cryptography. It 
   aims to be faster, simpler, leaner, and more useful than IPSec, while 
   avoiding the massive headache. It intends to be considerably more 

@@ -1,5 +1,5 @@
 *.tgz
-openwrt-wireguard-go_arm_cortex-a9.ipk
+openwrt-wireguard-go_*.ipk
 wg
 wg-go
 wireguard-go
