@@ -91,6 +91,15 @@ wireguard() {
     gitreset
 
     case $(git rev-parse --short HEAD) in
+        7aeaee6) # 2022-10-29
+            VERSION="2022.10.29"
+            UNMODIFIED_main="9ed8dfb5048293a4b7e8fa4e8bf697f06689f412346964f76b1381cb9ca52f79"
+            UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
+            UNMODIFIED_queueconstants_default="0e2637fc857d46ec3dfb0600360f4ebbb356982b729c23932283032bab887c7a"
+            MODIFIED_main="20f6d2b8ede9759ce3292bf1068975ec55c9b118aebecfa6637b25a4dab8e236"
+            MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
+            MODIFIED_queueconstants_default="92cff3d85807a6719f998b3a3b01a48840dbadf8c1b472d6001cb563dd857762"
+            ;;
         d49a3de) # 2022-08-20
             VERSION="2022.08.20"
             UNMODIFIED_main="8c58063f67f63d91d64dec6072cf728a3449a1b263c99074c850db0a630f6058"
