@@ -32,7 +32,7 @@ elif [ "$1" = "all" ]; then
     set -- $GOARCH_ALL
 else
     for a in $@; do
-        if ! echo "$a" | grep -qE "\b${a}\b"; then
+        if ! echo "$GOARCH_ALL" | grep -qE "\b${a}\b"; then
             echo "${RED}:ERROR: Unknown architecture '$a'!${NC}"
             echo "        Valid values are: ${GREEN}$GOARCH_ALL${NC}"
             exit 2
