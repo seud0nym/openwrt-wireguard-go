@@ -8,3 +8,4 @@ packagetemp.tar
 data.tar*
 control.tar*
 control
+bin/upx
