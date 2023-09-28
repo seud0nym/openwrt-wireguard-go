@@ -33,12 +33,34 @@ elif [ "$1" = "all" ]; then
 else
   for a in $@; do
     if ! echo "$GOARCH_ALL" | grep -qE "\b${a}\b"; then
-      echo "${RED}:ERROR: Unknown architecture '$a'!${NC}"
+      echo "${RED}ERROR: Unknown architecture '$a'!${NC}"
       echo "        Valid values are: ${GREEN}$GOARCH_ALL${NC}"
       exit 2
     fi
   done
 fi
+
+if [ ! -x bin/usign ]; then
+  git submodule init
+  git submodule update
+  pushd usign || exit 2
+    git fetch
+    git gc
+    git reset --hard HEAD
+    git merge origin/master
+    rm -rf build
+    mkdir build
+    pushd build
+      echo -e "${GREEN} -> Generating build system for usign...${GREY}[$(pwd)]${NC}"
+      cmake ..
+      echo -e "${GREEN} ->  Building usign...${GREY}[$(pwd)]${NC}"
+      make --silent || exit 2
+    popd # build
+  popd # usign
+  cp usign/build/usign bin/usign
+fi
+
+[ -e keys/seud0nym-private.key ] || { echo -e "${RED}ERROR: Private key not found!${NC}"; exit 2; }
 
 echo "${GREEN} -> Getting latest upx version...${NC}"
 __UPX_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/upx/upx/releases/latest)
@@ -233,6 +255,7 @@ CTL
     size=$(cat "$BASE_DIR/repository/$arch/base/${ipk}" | wc -c)
     sha256=$(sha256sum "$BASE_DIR/repository/$arch/base/${ipk}" | cut -d" " -f1)
     sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/$arch/base/Packages"
+    ${__BASE_DIR}/bin/usign -S -m "$BASE_DIR/repository/$arch/base/Packages" -s ${__BASE_DIR}/keys/seud0nym-private.key -x "$BASE_DIR/repository/$arch/base/Packages.sig"
     gzip -fk "$BASE_DIR/repository/$arch/base/Packages"
     obsolete=$(ls $BASE_DIR/repository/$arch/base/*.ipk 2>/dev/null | grep -v $version)
     [ -n "$obsolete" ] && rm $obsolete

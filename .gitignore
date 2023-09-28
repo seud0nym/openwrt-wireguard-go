@@ -9,3 +9,4 @@ data.tar*
 control.tar*
 control
 bin/upx
+keys/seud0nym-private.key
