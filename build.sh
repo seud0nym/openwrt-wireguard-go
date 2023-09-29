@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 BASE_DIR="$(pwd)"
 REPO_ROOT_DIR="$(dirname $(pwd))"
@@ -17,9 +17,9 @@ ARM=""
 
 while getopts :a:c: option; do
   case "${option}" in
-    a)  case "$OPTARG" in 5|6|7) ARM="$ARM $OPTARG";; *) echo "Unsupported ARM version $OPTARG"; exit 2;; esac;;
+    a)  case "$OPTARG" in 5|6|7) ARM="$ARM $OPTARG";; *) echo -e "${RED}ERROR: Unsupported ARM version $OPTARG${NC}"; exit 2;; esac;;
     c)  COMMIT="$OPTARG";;
-    *)  echo "Unknown option -${OPTION}"; exit 2;;
+    *)  echo -e "${RED}ERROR: Unknown option -${OPTION}${NC}"; exit 2;;
   esac
 done
 shift $((OPTIND-1))
@@ -33,14 +33,15 @@ elif [ "$1" = "all" ]; then
 else
   for a in $@; do
     if ! echo "$GOARCH_ALL" | grep -qE "\b${a}\b"; then
-      echo "${RED}ERROR: Unknown architecture '$a'!${NC}"
-      echo "        Valid values are: ${GREEN}$GOARCH_ALL${NC}"
+      echo -e "${RED}ERROR: Unknown architecture '$a'!${NC}"
+      echo -e "        Valid values are: ${GREEN}$GOARCH_ALL${NC}"
       exit 2
     fi
   done
 fi
 
 if [ ! -x bin/usign ]; then
+  echo -e "${GREEN}:Building usign...${GREY}${NC}"
   git submodule init
   git submodule update
   pushd usign || exit 2
@@ -51,9 +52,9 @@ if [ ! -x bin/usign ]; then
     rm -rf build
     mkdir build
     pushd build
-      echo -e "${GREEN} -> Generating build system for usign...${GREY}[$(pwd)]${NC}"
+      echo -e "${GREEN} -> Generating build system for usign...${GREY}${NC}"
       cmake ..
-      echo -e "${GREEN} ->  Building usign...${GREY}[$(pwd)]${NC}"
+      echo -e "${GREEN} ->  Building usign...${GREY}${NC}"
       make --silent || exit 2
     popd # build
   popd # usign
@@ -62,7 +63,7 @@ fi
 
 [ -e keys/seud0nym-private.key ] || { echo -e "${RED}ERROR: Private key not found!${NC}"; exit 2; }
 
-echo "${GREEN} -> Getting latest upx version...${NC}"
+echo -e "${GREEN}:Determining latest upx version...${NC}"
 __UPX_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/upx/upx/releases/latest)
 __UPX_VER=$(basename $__UPX_URL | sed -e 's/^v//')
 if [ ! -x bin/upx -o "$(bin/upx -V 2>/dev/null | grep ^upx | grep -o '[0-9.]*')" != "$__UPX_VER" ]; then
@@ -99,9 +100,9 @@ checkSHA256() {
   local CALCULATED="$(sha256sum $FILE | cut -d' ' -f1)"
 
   if [ "$CALCULATED" != "$EXPECTED" ]; then
-    echo "${RED}:ERROR: Checksum mismatch on $FILE!!${NC}"
-    echo "   Expecting  ${GREEN}$EXPECTED${NC}"
-    echo "   Calculated ${ORANGE}$CALCULATED${NC}"
+    echo -e "${RED}:ERROR: Checksum mismatch on $FILE!!${NC}"
+    echo -e "   Expecting  ${GREEN}$EXPECTED${NC}"
+    echo -e "   Calculated ${ORANGE}$CALCULATED${NC}"
     return 1
   else
     return 0
@@ -109,7 +110,7 @@ checkSHA256() {
 }
 
 wireguard() {
-  echo "${GREEN}:Processing wireguard-go${GREY}"
+  echo -e "${GREEN}:Processing wireguard-go${GREY}"
   local UNMODIFIED_main="b8d2b095b7de82d613b89553215879b810a6d2481459b80c83dc4328625d9e31"
   local UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
   local UNMODIFIED_queueconstants_default="c8d7dc22378554d8003ffbeb7c45fc0144cd9f691d17e6c60939fae4c829c411"
@@ -125,9 +126,9 @@ wireguard() {
 
   cd ${REPO_ROOT_DIR}/wireguard-go
   if [ $COMMIT = HEAD ]; then
-    echo "${GREEN} -> Pulling latest wireguard-go repository...${GREY}"
+    echo -e "${GREEN} -> Pulling latest wireguard-go repository...${GREY}"
   else
-    echo "${GREEN} -> Pulling wireguard-go repository as at commit ${COMMIT}...${GREY}"
+    echo -e "${GREEN} -> Pulling wireguard-go repository as at commit ${COMMIT}...${GREY}"
   fi
   gitreset
 
@@ -182,14 +183,14 @@ wireguard() {
   esac
 
   if checkSHA256 main.go $UNMODIFIED_main && checkSHA256 device/queueconstants_default.go $UNMODIFIED_queueconstants_default; then
-    echo "${GREEN} -> Removing 'first class kernel support' intercept from main.go...${GREY}"
+    echo -e "${GREEN} -> Removing 'first class kernel support' intercept from main.go...${GREY}"
     sed -e '/warning()$/d' -i main.go
-    echo "${GREEN} -> Modifying device/queueconstants_default.go to minimize memory use...${GREY}" # https://d.sb/2019/07/wireguard-on-openvz-lxc
+    echo -e "${GREEN} -> Modifying device/queueconstants_default.go to minimize memory use...${GREY}" # https://d.sb/2019/07/wireguard-on-openvz-lxc
     sed -e 's/\(MaxSegmentSize *=\).*/\1 1700/' -e 's/\(PreallocatedBuffersPerPool =\).*/\1 1024/' -i device/queueconstants_default.go
-    echo "${GREEN} -> Modifying Makefile...${GREY}"
+    echo -e "${GREEN} -> Modifying Makefile...${GREY}"
     sed -e 's/\(go build -v\)/\1 -ldflags "-s -w"/' -i Makefile
     git update-index --assume-unchanged device/queueconstants_default.go
-    echo -n "${NC}"
+    echo -e -n "${NC}"
     if checkSHA256 main.go $MODIFIED_main && checkSHA256 device/queueconstants_default.go $MODIFIED_queueconstants_default && checkSHA256 Makefile $MODIFIED_makefile; then
       return 0
     fi
@@ -200,7 +201,7 @@ wireguard() {
 }
 
 wg() {
-  echo "${GREEN}:Processing wg-go${GREY}"
+  echo -e "${GREEN}:Processing wg-go${GREY}"
 
   cd ${REPO_ROOT_DIR}
   if [ ! -d wg-go ]; then
@@ -209,7 +210,7 @@ wg() {
 
   cd ${REPO_ROOT_DIR}/wg-go
   if [ -n "$(git diff)" ]; then
-    echo "${RED}:ERROR: Uncommited changes in wg-go repository${NC}"
+    echo -e "${RED}:ERROR: Uncommited changes in wg-go repository${NC}"
     return 1
   fi
 
@@ -222,7 +223,7 @@ build_package() {
   local ipk="wireguard-go_${version}_$arch.ipk"
   local size sha256 obsolete installed_size=$(cat $(find "$BASE_DIR/release/usr" "$BASE_DIR/release/lib" -type f ! -name .gitkeep) | wc -c)
 
-  echo "${GREEN} -> Building $BASE_DIR/repository/$arch/base/${ipk}...${GREY}"
+  echo -e "${GREEN} -> Building $BASE_DIR/repository/$arch/base/${ipk}...${GREY}"
   mkdir -p $BASE_DIR/repository/$arch/base
   #region $BASE_DIR/release/control
   cat <<CTL > "$BASE_DIR/release/control"
@@ -255,14 +256,14 @@ CTL
     size=$(cat "$BASE_DIR/repository/$arch/base/${ipk}" | wc -c)
     sha256=$(sha256sum "$BASE_DIR/repository/$arch/base/${ipk}" | cut -d" " -f1)
     sed -e "/^Installed-Size:/a\Filename: ${ipk}\nSize: ${size}\nSHA256sum: ${sha256}" "$BASE_DIR/release/control" > "$BASE_DIR/repository/$arch/base/Packages"
-    ${__BASE_DIR}/bin/usign -S -m "$BASE_DIR/repository/$arch/base/Packages" -s ${__BASE_DIR}/keys/seud0nym-private.key -x "$BASE_DIR/repository/$arch/base/Packages.sig"
+    ${BASE_DIR}/bin/usign -S -m "$BASE_DIR/repository/$arch/base/Packages" -s ${BASE_DIR}/keys/seud0nym-private.key -x "$BASE_DIR/repository/$arch/base/Packages.sig"
     gzip -fk "$BASE_DIR/repository/$arch/base/Packages"
     obsolete=$(ls $BASE_DIR/repository/$arch/base/*.ipk 2>/dev/null | grep -v $version)
     [ -n "$obsolete" ] && rm $obsolete
   else
-    echo "${RED}: Failed to create package $BASE_DIR/repository/$arch/base/${ipk}!"
+    echo -e "${RED}: Failed to create package $BASE_DIR/repository/$arch/base/${ipk}!"
   fi
-  echo -n "${NC}"
+  echo -e -n "${NC}"
   rm $BASE_DIR/release/control $BASE_DIR/release/*.tar $BASE_DIR/release/*.tar.gz
 }
 
@@ -273,11 +274,11 @@ build_release() {
   local target
   local filename
 
-  echo "${GREEN}:Creating release asset $tgz...${GREY}"
+  echo -e "${GREEN}:Creating release asset $tgz...${GREY}"
   for source in "$REPO_ROOT_DIR/wireguard-go/wireguard-go" "$REPO_ROOT_DIR/wg-go/wg-go"; do
     cd "$(dirname "$source")"
     filename="$(basename $source)"
-    echo "${GREEN} -> Building $filename...${GREY}"
+    echo -e "${GREEN} -> Building $filename...${GREY}"
     make
     $BASE_DIR/bin/upx --ultra-brute $source
     target="$BASE_DIR/release/usr/bin/$filename"
@@ -288,9 +289,9 @@ build_release() {
     fi
   done
 
-  echo "${GREEN} -> Building $BASE_DIR/$tgz...${GREY}"
+  echo -e "${GREEN} -> Building $BASE_DIR/$tgz...${GREY}"
   tar -zvcf $BASE_DIR/$tgz --mode=755 --exclude="*.git*" -C "$BASE_DIR/release" $(find "$BASE_DIR/release" -maxdepth 1 -type d ! -name . -printf "%P ")
-  echo -n "${NC}"
+  echo -e -n "${NC}"
 
   case "$1" in 
     armv5) build_package arm_cortex-a9 $VERSION;;
@@ -301,11 +302,11 @@ build_release() {
 find . -maxdepth 1 -mindepth 1 -name 'openwrt-wireguard-go_*' -exec rm {} \;
 
 if wg && wireguard; then
-  echo "${GREY}"
+  echo -e "${GREY}"
   if ! cmp "$REPO_ROOT_DIR/wg-go/wg" "$BASE_DIR/release/usr/bin/wg" 1>&2 2>/dev/null; then
-    echo "${GREEN}:Updating $BASE_DIR/release/usr/bin/wg...${GREY}"
+    echo -e "${GREEN}:Updating $BASE_DIR/release/usr/bin/wg...${GREY}"
     cp -p "$REPO_ROOT_DIR/wg-go/wg" "$BASE_DIR/release/usr/bin/wg"
-    echo -n "${NC}"
+    echo -e -n "${NC}"
   fi
 
   cd $BASE_DIR
@@ -331,3 +332,4 @@ if wg && wireguard; then
   done
 fi
 
+echo -e "${GREEN}:Finished${NC}"
