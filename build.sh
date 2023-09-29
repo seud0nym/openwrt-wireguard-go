@@ -135,8 +135,8 @@ wireguard() {
   [ -z "$VERSION" ] && VERSION=$(date +%Y.%m.%d)
 
   case $(git rev-parse --short HEAD) in
-    2163620) # v0.0.20230223 2023-09-27
-      VERSION="2023.09.27"
+    2163620) # wireguard v0.0.20230223
+      VERSION="2023.09.29"
       UNMODIFIED_main="b8d2b095b7de82d613b89553215879b810a6d2481459b80c83dc4328625d9e31"
       UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
       UNMODIFIED_queueconstants_default="c8d7dc22378554d8003ffbeb7c45fc0144cd9f691d17e6c60939fae4c829c411"
@@ -144,7 +144,7 @@ wireguard() {
       MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
       MODIFIED_queueconstants_default="9fcf4a4cab866c4ceb9bb88a84ab708838e2e53904c8e3d599dcc03a5b5e9675"
       ;;
-    7aeaee6) # 2022-10-29
+    7aeaee6)
       VERSION="2022.10.29"
       UNMODIFIED_main="9ed8dfb5048293a4b7e8fa4e8bf697f06689f412346964f76b1381cb9ca52f79"
       UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
@@ -153,7 +153,7 @@ wireguard() {
       MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
       MODIFIED_queueconstants_default="92cff3d85807a6719f998b3a3b01a48840dbadf8c1b472d6001cb563dd857762"
       ;;
-    d49a3de) # 2022-08-20
+    d49a3de)
       VERSION="2022.08.20"
       UNMODIFIED_main="8c58063f67f63d91d64dec6072cf728a3449a1b263c99074c850db0a630f6058"
       UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
@@ -162,7 +162,7 @@ wireguard() {
       MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
       MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
       ;;
-    3b95c81) # 2022-02-13
+    3b95c81)
       VERSION="2022.03.01"
       UNMODIFIED_main="8c58063f67f63d91d64dec6072cf728a3449a1b263c99074c850db0a630f6058"
       UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
@@ -171,7 +171,7 @@ wireguard() {
       MODIFIED_makefile="0b650215e15b92e0b185fc56bc517390cb35e1d36af0dea09920b84c568065c1"
       MODIFIED_queueconstants_default="7a7fdce9ae60633d82c54749edffffa4de9a30f0352009a11383c30d8c2654b3"
       ;;
-    bb745b2) # 2021-09-27
+    bb745b2)
       VERSION="2021.11.27"
       UNMODIFIED_main="1889250813d3fc9e4538e669b4fe86fd2caa4949094be06033e6a5c0eb6deb29"
       UNMODIFIED_makefile="f59c6fbbe54c2d194207ef93bdb27ab69a4f67efd26f147f3a0c60268ebaf57c"
@@ -274,17 +274,20 @@ build_release() {
   local target
   local filename
 
-  echo -e "${GREEN}:Creating release asset $tgz...${GREY}"
+  echo -e "${GREEN}:Creating $1 release asset $tgz...${GREY}"
   for source in "$REPO_ROOT_DIR/wireguard-go/wireguard-go" "$REPO_ROOT_DIR/wg-go/wg-go"; do
     cd "$(dirname "$source")"
     filename="$(basename $source)"
-    echo -e "${GREEN} -> Building $filename...${GREY}"
+    echo -e "${GREEN} -> Building $1 $filename...${GREY}"
     make
+    echo -e "${GREEN} -> Compressing $1 $filename...${GREY}"
     $BASE_DIR/bin/upx --ultra-brute $source
     target="$BASE_DIR/release/usr/bin/$filename"
     if ! cmp "$source" "$target" 2>/dev/null; then
+      echo -e "${GREEN} -> Moving $source to $target...${GREY}"
       mv "$source" "$target"
     else
+      echo -e "${ORANGE} -> Deleting $source (same as $target)...${GREY}"
       rm "$source"
     fi
   done
