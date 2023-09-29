@@ -8,8 +8,24 @@ config_get proto   $INTERFACE proto   unknown
 config_get enabled $INTERFACE enabled 0
 
 if [ "$proto" = "wireguard" -a "$enabled" = "1" -a "$(ifstatus $INTERFACE | jsonfilter -e '@.pending')" = "false" ]; then
-  logger -t "hotplug-wireguard" -p daemon.warn "Interface '$INTERFACE' removed but still enabled! Bringing back up now..."
-  ifup $INTERFACE
+  __NOW=$(date +%s)
+  echo $__NOW >> /tmp/.${INTERFACE}-crash-times
+  __CRASH_COUNT=$(tail -n 10 /tmp/.${INTERFACE}-crash-times | wc -l)
+  if [ $__CRASH_COUNT = 10 ]; then
+    __START=$(tail -n 10 /tmp/.${INTERFACE}-crash-times | head -n 1)
+    __ELAPSED=$(( $__NOW - $__START ))
+    if [ $__ELAPSED -lt 15 ]; then
+      logger -t "hotplug-wireguard" -p daemon.warn "Interface '$INTERFACE' has crashed 10 times in $__ELAPSED seconds: disabling"  
+      uci set network.${INTERFACE}.enabled='0'
+      uci commit network
+      rm /tmp/.${INTERFACE}-crash-times
+    fi
+    unset __START __ELAPSED
+  else
+    logger -t "hotplug-wireguard" -p daemon.warn "Interface '$INTERFACE' removed but still enabled! Bringing back up now..."
+    ifup $INTERFACE
+  fi
+  unset __NOW __CRASH_COUNT
 fi
 
 exit 0
