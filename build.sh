@@ -10,7 +10,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # https://golang.org/doc/install/source#environment
-GOARCH_ALL="386 amd64 arm arm64 ppc64 ppc64le mips mipsle mips64 mips64le riscv64 s390x"
+GOARCH_ALL="386 amd64 arm arm64 ppc64 ppc64le mips mipsle mips64 mips64le riscv64 s390x mipsel_24kc"
 
 COMMIT="HEAD"
 ARM=""
@@ -316,16 +316,34 @@ if wg && wireguard; then
 
   export GOOS="linux"
   for a in $@; do
-    export GOARCH="$a"
-    if [ "$a" = "arm" ]; then
-      for v in $ARM; do
-        export GOARM="$v"
-        build_release "${a}v${v}"
-        unset GOARM
-      done
-    else
-      build_release "$a"
-    fi
+    case "$a" in
+      mipsel_24kc)
+        # OpenWrt mipsel 24kc targets expect mipsle + softfloat
+        export GOARCH="mipsle"
+        export GOMIPS="softfloat"
+        build_release "$a"
+        unset GOMIPS
+        ;;
+      mipsel_24kc_hard|mipsel_24kc_hardfloat)
+        # optional hardfloat variant
+        export GOARCH="mipsle"
+        export GOMIPS="hardfloat"
+        build_release "$a"
+        unset GOMIPS
+        ;;
+      arm)
+        export GOARCH="arm"
+        for v in $ARM; do
+          export GOARM="$v"
+          build_release "${a}v${v}"
+          unset GOARM
+        done
+        ;;
+      *)
+        export GOARCH="$a"
+        build_release "$a"
+        ;;
+    esac
     unset GOARCH
   done
   unset GOOS
